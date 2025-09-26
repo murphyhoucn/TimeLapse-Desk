@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-TimeLapse@Desk Demo (优化版            # 设置摄像头参数（保持最大分辨率）
-            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)   # 保持1920*1080分辨率
-            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
-            cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)       # 减少缓冲区大小
-            cap.set(cv2.CAP_PROP_FPS, 30)             # 设置帧率拍照和人脸对齐处理的演示程序 - 针对速度进行了优化
+TimeLapse@Desk Demo (优化版 + 水印功能)
+自动拍照和人脸对齐处理的演示程序 - 针对速度进行了优化，增加了水印功能
 """
 
 import cv2
@@ -60,6 +57,62 @@ class TimeLapseCamera:
             
             self._mediapipe_initialized = True
             print("人脸检测模型初始化完成")
+    
+    def _add_watermark(self, image, timestamp, alpha=0.7):
+        """
+        在图像右下角添加半透明水印
+        
+        Args:
+            image: 输入图像
+            timestamp: 时间戳字符串
+            alpha: 透明度 (0.0-1.0，0为完全透明，1为完全不透明)
+            
+        Returns:
+            numpy.ndarray: 添加水印后的图像
+        """
+        # 复制图像以避免修改原图
+        watermarked_image = image.copy()
+        
+        # 水印文本 - 使用稳定的版权标记
+        copyright_text = "Copyright Murphy" 
+        time_text = timestamp
+        
+        # 字体设置 - 使用更清晰的字体
+        font = cv2.FONT_HERSHEY_DUPLEX  # 更接近Consolas的等宽字体效果
+        font_scale = 0.6
+        thickness = 1
+        color = (255, 255, 255)  # 白色
+        
+        # 获取图像尺寸
+        height, width = watermarked_image.shape[:2]
+        
+        # 计算文本尺寸
+        (copyright_w, copyright_h), _ = cv2.getTextSize(copyright_text, font, font_scale, thickness)
+        (time_w, time_h), _ = cv2.getTextSize(time_text, font, font_scale, thickness)
+        
+        # 设置水印位置（距离边界有一定距离）
+        margin_right = 30  # 距离右边界
+        margin_bottom = 30  # 距离下边界
+        line_spacing = 8   # 行间距
+        
+        copyright_x = width - copyright_w - margin_right
+        copyright_y = height - time_h - margin_bottom - line_spacing
+        time_x = width - time_w - margin_right  
+        time_y = height - margin_bottom
+        
+        # 创建透明层
+        overlay = watermarked_image.copy()
+        
+        # 在透明层上绘制文字（无描边，清晰效果）
+        cv2.putText(overlay, copyright_text, (copyright_x, copyright_y), 
+                   font, font_scale, color, thickness, cv2.LINE_AA)
+        cv2.putText(overlay, time_text, (time_x, time_y), 
+                   font, font_scale, color, thickness, cv2.LINE_AA)
+        
+        # 使用alpha混合实现透明效果
+        cv2.addWeighted(overlay, alpha, watermarked_image, 1 - alpha, 0, watermarked_image)
+        
+        return watermarked_image
     
     def _display_camera_settings(self, cap):
         """
@@ -152,10 +205,16 @@ class TimeLapseCamera:
             filename = f"photo_{timestamp}.jpg"
             filepath = os.path.join(self.output_dir, filename)
             
-            # 保存原始照片
-            cv2.imwrite(filepath, frame)
+            # 添加水印
+            watermark_time = datetime.now().strftime("%Y/%m/%d %H:%M")
+            watermark_time_place = watermark_time + " Xi'An"
+            watermarked_frame = self._add_watermark(frame, watermark_time_place)
+            
+            # 保存带水印的原始照片
+            cv2.imwrite(filepath, watermarked_frame)
             print(f"照片已保存: {filepath}")
             
+            # 返回无水印的原始图像供后续对齐处理使用
             return True, frame, filename
             
         except Exception as e:
@@ -287,10 +346,26 @@ class TimeLapseCamera:
                 print("警告：人脸对齐失败")
                 return False
             
-            # 保存对齐后的图像
+            # 从文件名提取时间戳并格式化为水印格式
+            timestamp_str = filename.replace("photo_", "").replace(".jpg", "")
+            try:
+                # 解析时间戳 20250926_143022 -> 2025/09/26 14:30
+                dt = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+                watermark_time = dt.strftime("%Y/%m/%d %H:%M")
+            except:
+                # 如果解析失败，使用当前时间
+                watermark_time = datetime.now().strftime("%Y/%m/%d %H:%M")
+            
+            # 添加地点信息到时间部分
+            watermark_time_place = watermark_time + " Xi'An"
+            
+            # 为对齐图像添加水印
+            watermarked_aligned = self._add_watermark(aligned_image, watermark_time_place)
+            
+            # 保存带水印的对齐后图像
             aligned_filename = f"aligned_{filename}"
             aligned_filepath = os.path.join(self.aligned_dir, aligned_filename)
-            cv2.imwrite(aligned_filepath, aligned_image)
+            cv2.imwrite(aligned_filepath, watermarked_aligned)
             print(f"对齐照片已保存: {aligned_filepath}")
             
             return True
