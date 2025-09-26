@@ -2,6 +2,10 @@
 chcp 65001 >nul
 title TimeLapse@Desk - 每日拍照
 
+REM 显示窗口信息
+echo 解锁时间: %date% %time%
+echo 正在自动执行拍照程序...
+
 echo ======================================
 echo    TimeLapse@Desk 每日拍照程序
 echo ======================================
@@ -25,23 +29,22 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-REM 检查依赖包
-pip show opencv-python >nul 2>&1
-if %errorlevel% neq 0 (
-    echo 正在安装依赖包...
-    pip install -r requirements.txt
-    if %errorlevel% neq 0 (
-        echo 错误：安装依赖包失败
-        pause
-        exit /b 1
-    )
-)
+@REM REM 检查依赖包
+@REM pip show opencv-python >nul 2>&1
+@REM if %errorlevel% neq 0 (
+@REM     echo 正在安装依赖包...
+@REM     pip install -r requirements.txt
+@REM     if %errorlevel% neq 0 (
+@REM         echo 错误：安装依赖包失败
+@REM         pause
+@REM         exit /b 1
+@REM     )
+@REM )
 
 REM 自动运行拍照对齐程序
 echo 正在启动自动拍照对齐程序...
 python timelapse_demo.py
 
-REM 等待用户确认
+REM 程序执行完毕
 echo.
 echo 程序执行完毕！
-pause

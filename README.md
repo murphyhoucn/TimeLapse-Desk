@@ -65,4 +65,3 @@ ffmpeg -framerate 10 -pattern_type glob -i "aligned_photos/*.jpg" -c:v libx264 -
 ```
 
 详细使用说明请查看 [`USAGE.md`](USAGE.md)
-
