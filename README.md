@@ -1,5 +1,5 @@
-# TimeLapse-Desk
-TimeLapse@Desk（工位时光流逝）
+# TickTock-Desk
+TickTock@Desk（工位时光流逝）
 
 我在网上发现了一个很有趣的项目，就是打工人或者是研究生，每天到工位上的时候，自动调用摄像头给自己拍张照片，然后时间久了，就能剪辑成一个视频。
 

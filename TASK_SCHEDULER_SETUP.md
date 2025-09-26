@@ -26,8 +26,8 @@
    - 点击"新建"
    - 操作：**启动程序**
    - **程序或脚本：** `powershell.exe`
-   - **添加参数：** `**添加参数：** `-WindowStyle Hidden -ExecutionPolicy Bypass -File "D:\DevProj\TimeLapse-Desk\run_timelapse.ps1"``
-   - **起始于：** `D:\DevProj\TimeLapse-Desk`
+   - **添加参数：** `**添加参数：** `-WindowStyle Hidden -ExecutionPolicy Bypass -File "D:\DevProj\TickTock-Desk\run_timelapse.ps1"``
+   - **起始于：** `D:\DevProj\TickTock-Desk`
    - 点击"确定"
 
 6. **条件设置**（可选优化）
