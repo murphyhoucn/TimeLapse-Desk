@@ -110,15 +110,43 @@ python timelapse_demo.py
 
 ### 🎬 延时视频制作
 
-收集足够对齐照片后，使用FFmpeg一键制作专业延时视频：
+#### 📦 安装FFmpeg
+- https://www.ffmpeg.org/download.html#build-windows
 
+#### 🎥 制作视频的三种方法
+
+**方法1：使用专用脚本（推荐，解决兼容性问题）**
 ```bash
-# 基础延时视频 (10fps)
+# 一键制作三种质量的视频
+python create_timelapse.py
+```
+自动生成：
+- `timelapse_preview.mp4` - 快速预览版 (30fps)
+- `timelapse_standard.mp4` - 标准版 (15fps) 
+- `timelapse_hq.mp4` - 高质量版 (10fps)
+
+**方法2：手动FFmpeg命令（适用于支持glob的版本）**
+```bash
+# 基础延时视频
 ffmpeg -framerate 10 -pattern_type glob -i "aligned_photos/*.jpg" -c:v libx264 -pix_fmt yuv420p timelapse.mp4
 
-# 高质量延时视频 (更多参数优化)
+# 高质量延时视频  
 ffmpeg -framerate 15 -pattern_type glob -i "aligned_photos/*.jpg" -c:v libx264 -crf 18 -pix_fmt yuv420p -vf "scale=1920:1080" timelapse_hq.mp4
 ```
+
+**方法3：文件列表方式（兼容所有FFmpeg版本）**
+```bash
+# 1. 创建文件列表
+ls aligned_photos/*.jpg | sed 's/.*/"file &"/' > filelist.txt
+
+# 2. 使用concat方式
+ffmpeg -f concat -safe 0 -i filelist.txt -r 15 -c:v libx264 -crf 18 -pix_fmt yuv420p timelapse.mp4
+```
+
+**💡 参数说明**：
+- `-r 15`：视频帧率，数值越大播放越快
+- `-crf 18`：视频质量，0-51范围，18为高质量
+- `-pix_fmt yuv420p`：像素格式，确保播放器兼容性
 
 ## 📚 详细文档
 
