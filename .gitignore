@@ -5,3 +5,6 @@ __pycache__/
 .gif
 .bmp
 .svg
+
+aligned_photos/
+photos/
